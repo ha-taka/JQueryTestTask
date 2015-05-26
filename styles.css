@@ -1,0 +1,15 @@
+.error {
+    background-color:red;
+}
+
+.init {
+    display:none;
+}
+
+.no_error {
+    display:none;
+}
+
+.selected {
+    background-color:lightblue;
+}

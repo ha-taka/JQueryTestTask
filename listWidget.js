@@ -41,6 +41,7 @@
             this._rowTemplate = this._table.find('[data-part="grid-row"]').remove();
             this._items = [];
             this._formats = {};
+
             this._on({
                 'click [name=delete]': '_removeItem',
                 'click [name=edit]': '_editItem',
@@ -50,45 +51,9 @@
             selectedIndex = -1;
         },
 
-        setValidators: function(validators) {
-            for (var fieldName in validators) {
-                var fieldValidators = validators[fieldName];
-                this._on(this._form[fieldName], { change: this._handleChangeEvent(fieldName, fieldValidators) });
-            }
-
-            console.log(this.element.find('span.error').length);
-        },
-
         setFormats: function(formats) {
             for (var fieldName in formats) {
                 this._formats[fieldName] = formats[fieldName];
-            }
-        },
-
-        _handleChangeEvent: function(fieldName, validators) {
-            var self = this;
-            return function(event) {
-                var field = $(event.target);
-                var value = event.target.value;
-                var errorElem = field.parent().find("span");
-
-                $.each(validators, function(validatorName) {
-                    var options = {};
-                    if (validatorName === 'unique') {
-                        options['items'] = self._items;
-                        options['selectedIndex'] = selectedIndex;
-                        options['fieldName'] = fieldName;
-                    }
-
-                    var success = VALIDATORS[validatorName](value, options) ;
-                    errorElem.removeClass("init").removeClass(success? "error":"no_error").addClass(success? "no_error":"error");
-                    if (!success) {
-                        return false;
-                    }
-                });
-
-                console.log(this.element.find('span.error').length);
-                this._form.save.disabled = this.element.find('span.error').length > 0;
             }
         },
 
@@ -131,8 +96,6 @@
         },
 
         _editItem: function(event) {
-            this.element.find('span').removeClass('error').addClass('no_error');
-
             var index = $(event.target).closest('tr').index();
             this._objToForm(this._items[index]);
 
@@ -140,7 +103,6 @@
             this._table.find('tbody tr').eq(index).addClass('selected');
 
             selectedIndex = index;
-            this._form.save.disabled = false;
         },
 
         _saveItem: function(event) {
@@ -163,8 +125,6 @@
 
         _clearFields: function() {
             this.element.find('input[type=text]').val('');
-            this.element.find('span').addClass('error init');
-            this._form.save.disabled = true;
         },
 
         _print: function() {
@@ -191,4 +151,67 @@
             }
         }
     });
-}(jQuery));
+
+    $.widget('ui.validateListWidget', $.ui.listWidget, {
+        _create: function () {
+            this._fieldWithValidator = [];
+            this._super();
+        },
+
+        setValidators: function(validators) {
+            this._form.save.disabled = true;
+            for (var fieldName in validators) {
+                this._fieldWithValidator.push(fieldName + 'Error');
+                var fieldValidators = validators[fieldName];
+                this._on(this._form[fieldName], { change: this._handleChangeEvent(fieldName, fieldValidators) });
+
+                this.element.find('#' + fieldName + 'Error').addClass('error init');
+                var field = this.element.find('#' + fieldName + 'Error');
+            }
+        },
+
+        _handleChangeEvent: function(fieldName, validators) {
+            var self = this;
+            return function(event) {
+                var field = $(event.target);
+                var value = event.target.value;
+                var errorElem = field.parent().find("span");
+
+                $.each(validators, function (validatorName) {
+                    var options = {};
+                    if (validatorName === 'unique') {
+                        options['items'] = self._items;
+                        options['selectedIndex'] = selectedIndex;
+                        options['fieldName'] = fieldName;
+                    }
+
+                    var success = VALIDATORS[validatorName](value, options);
+                    errorElem.removeClass("init").removeClass(success ? "error" : "no_error").addClass(success ? "no_error" : "error");
+                    if (!success) {
+                        return false;
+                    }
+                });
+
+                this._form.save.disabled = this.element.find('span.error').length > 0;
+            }
+        },
+
+        _clearFields: function() {
+            var self = this;
+            this.element.find('span').each(function(index, el) {
+                if ($.inArray(el.id, self._fieldWithValidator) > -1) {
+                    $(el).addClass('error init');
+                }
+            });
+
+            this._form.save.disabled = true;
+            this._super();
+        },
+
+        _editItem: function(event) {
+            this.element.find('span').removeClass('error').addClass('no_error');
+            this._form.save.disabled = false;
+            this._super(event);
+        }
+    });
+    }(jQuery));

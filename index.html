@@ -38,17 +38,16 @@
             <br><br><br>
             <div>
             Name:<input type="text" name="name"/>
-            <span class="error init">Required</span><br>
+            <span id="nameError" class="init">Required</span><br>
             </div>
             <div>
             SKU:<input type="text" name="sku"/>
-            <span class="error init">Required and must be unique</span>
+            <span id="skuError" class="init">Required and must be unique</span>
             </div>
             <div>
             Price:<input type="text" name="price"/>
-            <span class="error init">Required and must be a positive number</span></div><br>
-            <button name="save" disabled>Save</button>
-            <!--button name="update" disabled>Update</button--->
+            <span id="priceError" class="init">Required and must be a positive number</span></div><br>
+            <button name="save">Save</button>
         </form>
 
         <br><br><br><button name="export">Export</button>

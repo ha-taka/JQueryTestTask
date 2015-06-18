@@ -3,15 +3,15 @@
  */
 
 $(function() {
-    $('#products').listWidget();
+    $('#products').validateListWidget();
 
-    $('#products').listWidget('setValidators',  {
+    $('#products').validateListWidget('setValidators',  {
         'name': { required: true },
         'sku': { required: true, unique: true },
         'price': { required: true, posNumber: true }
     });
 
-    $('#products').listWidget('setFormats', {
+    $('#products').validateListWidget('setFormats', {
         'price': { currency:true }
     })
 });
